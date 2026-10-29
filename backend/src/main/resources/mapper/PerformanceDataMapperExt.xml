@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.monitor.dao.PerformanceDataMapperExt">
+
+    <!-- 查询启动时间列表 -->
+    <select id="selectStartupTimes" resultType="map">
+        SELECT 
+            JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.startupTime')) AS startupTime
+        FROM performance_data
+        WHERE app_key = #{appKey}
+        AND event_type = 'APP_START'
+        <if test="startTime != null">
+            AND event_time >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND event_time &lt;= #{endTime}
+        </if>
+        AND JSON_EXTRACT(event_data, '$.startupTime') IS NOT NULL
+    </select>
+
+    <!-- 查询FPS分布 -->
+    <select id="selectFpsDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN fps &lt; 20 THEN '0-20'
+                WHEN fps &lt; 40 THEN '20-40'
+                WHEN fps &lt; 50 THEN '40-50'
+                WHEN fps &lt; 55 THEN '50-55'
+                ELSE '55+'
+            END AS fpsRange,
+            COUNT(DISTINCT device_id) AS userCount
+        FROM (
+            SELECT 
+                device_id,
+                AVG(JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.fps'))) AS fps
+            FROM performance_data
+            WHERE app_key = #{appKey}
+            AND event_type IN ('CPU', 'MEMORY', 'GPU')
+            <if test="startTime != null">
+                AND event_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND event_time &lt;= #{endTime}
+            </if>
+            AND JSON_EXTRACT(event_data, '$.fps') IS NOT NULL
+            GROUP BY device_id
+        ) t
+        GROUP BY fpsRange
+        ORDER BY fpsRange
+    </select>
+
+    <!-- 按设备维度聚合 -->
+    <select id="selectDeviceDistribution" resultType="map">
+        SELECT
+            device_id AS deviceId,
+            COUNT(*) AS eventCount,
+            SUM(CASE WHEN event_type = 'APP_START' THEN 1 ELSE 0 END) AS startCount,
+            SUM(CASE WHEN event_type = 'APP_CRASH' THEN 1 ELSE 0 END) AS crashCount,
+            SUM(CASE WHEN event_type = 'ANR' THEN 1 ELSE 0 END) AS anrCount,
+            SUM(CASE WHEN event_type = 'LOW_FPS' THEN 1 ELSE 0 END) AS lagCount,
+            -- 兼容两种上报字段名：新版用 startupTime，早期 SDK 可能用 duration
+            COALESCE(ROUND(AVG(CASE WHEN event_type = 'APP_START'
+                THEN CAST(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.startupTime')),
+                                   JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.duration'))) AS DECIMAL(12,2)) END), 0), 0) AS avgStartupTime,
+            COALESCE(MAX(os_version), '未知') AS osVersion,
+            COALESCE(MAX(version_code), '未知') AS appVersion
+        FROM performance_data
+        WHERE app_key = #{appKey}
+        <if test="startTime != null">
+            AND event_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND event_time &lt;= #{endTime}
+        </if>
+        GROUP BY device_id
+        ORDER BY eventCount DESC
+        LIMIT 50
+    </select>
+
+    <!-- 按网络类型维度聚合 -->
+    <select id="selectNetworkDistribution" resultType="map">
+        SELECT
+            COALESCE(network_type, '未知') AS networkType,
+            COUNT(*) AS eventCount,
+            COUNT(DISTINCT device_id) AS userCount,
+            SUM(CASE WHEN event_type = 'APP_CRASH' THEN 1 ELSE 0 END) AS crashCount,
+            SUM(CASE WHEN event_type = 'ANR' THEN 1 ELSE 0 END) AS anrCount,
+            SUM(CASE WHEN event_type = 'APP_START' THEN 1 ELSE 0 END) AS startCount,
+            SUM(CASE WHEN event_type = 'NETWORK' THEN 1 ELSE 0 END) AS networkTotal,
+            SUM(CASE WHEN event_type = 'NETWORK'
+                     AND JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.success')) IN ('false', '0')
+                THEN 1 ELSE 0 END) AS networkFailureCount,
+            -- 兼容 startupTime / duration 两种字段名
+            COALESCE(ROUND(AVG(CASE WHEN event_type = 'APP_START'
+                THEN CAST(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.startupTime')),
+                                   JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.duration'))) AS DECIMAL(12,2)) END), 0), 0) AS avgStartupTime
+        FROM performance_data
+        WHERE app_key = #{appKey}
+        <if test="startTime != null">
+            AND event_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND event_time &lt;= #{endTime}
+        </if>
+        GROUP BY COALESCE(network_type, '未知')
+        ORDER BY eventCount DESC
+    </select>
+
+</mapper>

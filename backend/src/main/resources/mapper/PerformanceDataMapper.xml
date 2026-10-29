@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.monitor.dao.PerformanceDataMapper">
+
+    <!-- 批量插入性能数据 -->
+    <insert id="insertBatch" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO performance_data (
+            app_key, device_id, session_id, event_type, event_data, event_time, create_time,
+            version_code, os_version, network_type
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.appKey},
+                #{item.deviceId},
+                #{item.sessionId},
+                #{item.eventType},
+                #{item.eventData, typeHandler=com.monitor.handler.JsonNodeTypeHandler},
+                #{item.eventTime},
+                #{item.createTime},
+                #{item.versionCode},
+                #{item.osVersion},
+                #{item.networkType}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

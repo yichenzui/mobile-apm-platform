@@ -1,0 +1,34 @@
+{
+  "name": "mobile-apm-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.1.0",
+    "@stomp/stompjs": "^7.3.0",
+    "axios": "^1.4.0",
+    "dayjs": "^1.11.9",
+    "echarts": "^5.4.3",
+    "element-plus": "^2.3.9",
+    "pinia": "^2.1.6",
+    "sockjs-client": "^1.6.1",
+    "vue": "^3.3.4",
+    "vue-echarts": "^6.6.1",
+    "vue-router": "^4.2.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.2.3",
+    "eslint": "^8.45.0",
+    "eslint-plugin-vue": "^9.15.1",
+    "sass": "^1.64.1",
+    "vite": "^5.0.0",
+    "vitest": "^3.2.6"
+  }
+}

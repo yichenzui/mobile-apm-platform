@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.monitor.dao.PerformanceSummaryMapper">
+
+    <!-- 查询崩溃率统计 -->
+    <select id="selectCrashStats" resultType="map">
+        SELECT 
+            SUM(crash_count) * 100.0 / NULLIF(SUM(session_count), 0) AS crashRate,
+            SUM(crash_count) AS totalCrashes,
+            SUM(session_count) AS totalSessions
+        FROM performance_summary
+        WHERE app_key = #{appKey}
+        AND province IS NULL
+        AND app_version IS NULL
+        <if test="startTime != null">
+            AND date >= DATE(#{startTime})
+        </if>
+        <if test="endTime != null">
+            AND date &lt;= DATE(#{endTime})
+        </if>
+        <if test="granularity == 'hour'">
+            AND hour IS NOT NULL
+        </if>
+        <if test="granularity == 'day'">
+            AND hour IS NULL
+        </if>
+    </select>
+
+    <!-- 查询卡顿率统计 -->
+    <select id="selectLagStats" resultType="map">
+        SELECT 
+            SUM(lag_count) * 100.0 / NULLIF(SUM(session_count), 0) AS lagRate,
+            SUM(lag_count) AS totalLags,
+            SUM(session_count) AS totalSessions
+        FROM performance_summary
+        WHERE app_key = #{appKey}
+        AND province IS NULL
+        AND app_version IS NULL
+        <if test="startTime != null">
+            AND date >= DATE(#{startTime})
+        </if>
+        <if test="endTime != null">
+            AND date &lt;= DATE(#{endTime})
+        </if>
+        <if test="granularity == 'hour'">
+            AND hour IS NOT NULL
+        </if>
+        <if test="granularity == 'day'">
+            AND hour IS NULL
+        </if>
+    </select>
+
+    <!-- 查询网络统计 -->
+    <select id="selectNetworkStats" resultType="map">
+        SELECT 
+            (SUM(network_request_count) - SUM(network_failure_count)) * 100.0 / NULLIF(SUM(network_request_count), 0) AS successRate,
+            SUM(network_request_count) AS totalRequests,
+            SUM(network_failure_count) AS totalFailures
+        FROM performance_summary
+        WHERE app_key = #{appKey}
+        AND province IS NULL
+        AND app_version IS NULL
+        <if test="startTime != null">
+            AND date >= DATE(#{startTime})
+        </if>
+        <if test="endTime != null">
+            AND date &lt;= DATE(#{endTime})
+        </if>
+        <if test="granularity == 'hour'">
+            AND hour IS NOT NULL
+        </if>
+        <if test="granularity == 'day'">
+            AND hour IS NULL
+        </if>
+    </select>
+
+    <!-- 查询地区分布 -->
+    <select id="selectRegionDistribution" resultType="map">
+        SELECT 
+            province,
+            SUM(active_users) AS userCount,
+            SUM(crash_count) AS crashCount,
+            SUM(anr_count) AS anrCount,
+            SUM(crash_count) * 100.0 / NULLIF(SUM(session_count), 0) AS crashRate,
+            COALESCE(AVG(avg_startup_time), 0) AS avgStartupTime,
+            COALESCE(SUM(network_request_count) - SUM(network_failure_count), 0) * 100.0 / NULLIF(SUM(network_request_count), 0) AS networkSuccessRate,
+            COALESCE(SUM(network_failure_count) * 100.0 / NULLIF(SUM(network_request_count), 0), 0) AS networkFailureRate,
+            COALESCE(SUM(lag_count) * 100.0 / NULLIF(SUM(session_count), 0), 0) AS lagRate
+        FROM performance_summary
+        WHERE app_key = #{appKey}
+        AND province IS NOT NULL
+        <if test="startTime != null">
+            AND date >= DATE(#{startTime})
+        </if>
+        <if test="endTime != null">
+            AND date &lt;= DATE(#{endTime})
+        </if>
+        GROUP BY province
+        ORDER BY userCount DESC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 查询趋势数据（按日期分组） -->
+    <select id="selectTrendData" resultType="map">
+        SELECT 
+            date AS time,
+            SUM(crash_count) * 100.0 / NULLIF(SUM(session_count), 0) AS crashRate,
+            SUM(active_users) AS activeUsers,
+            SUM(lag_count) * 100.0 / NULLIF(SUM(session_count), 0) AS lagRate,
+            COALESCE(AVG(avg_startup_time), 0) AS avgStartupTime
+        FROM performance_summary
+        WHERE app_key = #{appKey}
+        AND province IS NULL
+        AND app_version IS NULL
+        <if test="startTime != null">
+            AND date >= DATE(#{startTime})
+        </if>
+        <if test="endTime != null">
+            AND date &lt;= DATE(#{endTime})
+        </if>
+        GROUP BY date
+        ORDER BY date ASC
+    </select>
+
+    <!-- 查询版本分布（基于汇总表按app_version分组） -->
+    <select id="selectVersionDistribution" resultType="map">
+        SELECT 
+            app_version AS version,
+            SUM(active_users) AS userCount,
+            SUM(crash_count) AS crashCount,
+            SUM(anr_count) AS anrCount,
+            SUM(crash_count) * 100.0 / NULLIF(SUM(session_count), 0) AS crashRate,
+            SUM(anr_count) * 100.0 / NULLIF(SUM(session_count), 0) AS anrRate,
+            COALESCE(AVG(avg_startup_time), 0) AS avgStartupTime,
+            COALESCE(AVG(avg_cpu_usage), 0) AS avgCpuUsage,
+            COALESCE(AVG(avg_memory_usage), 0) AS avgMemoryUsage,
+            COALESCE(SUM(network_failure_count) * 100.0 / NULLIF(SUM(network_request_count), 0), 0) AS networkFailureRate,
+            COALESCE(SUM(network_request_count) - SUM(network_failure_count), 0) * 100.0 / NULLIF(SUM(network_request_count), 0) AS networkSuccessRate,
+            COALESCE(SUM(lag_count) * 100.0 / NULLIF(SUM(session_count), 0), 0) AS lagRate
+        FROM performance_summary
+        WHERE app_key = #{appKey}
+        AND app_version IS NOT NULL
+        AND province IS NULL
+        <if test="startTime != null">
+            AND date >= DATE(#{startTime})
+        </if>
+        <if test="endTime != null">
+            AND date &lt;= DATE(#{endTime})
+        </if>
+        GROUP BY app_version
+        ORDER BY userCount DESC
+    </select>
+
+</mapper>
