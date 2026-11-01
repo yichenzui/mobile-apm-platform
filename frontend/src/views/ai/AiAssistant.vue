@@ -252,7 +252,7 @@ async function runDiagnosis() {
       reportContent = `> **综合风险等级：${data.riskLevel}**\n\n${reportContent}`
     }
     if (data.keyMetrics) {
-      reportContent = `## 关键指标摘要\n\n| 指标 | 数值 |\n|------|------|\n| 崩溃率 | ${(data.keyMetrics.crashRate * 100).toFixed(2)}% |\n| 平均启动时间 | ${data.keyMetrics.avgStartupTime?.toFixed(0)}ms |\n| 网络成功率 | ${data.keyMetrics.networkSuccessRate?.toFixed(1)}% |\n| 活跃用户 | ${data.keyMetrics.activeUsers} |\n| 告警数 | ${data.keyMetrics.alertCount} |\n\n${reportContent}`
+      reportContent = `## 关键指标摘要\n\n| 指标 | 数值 |\n|------|------|\n| 崩溃率 | ${Number(data.keyMetrics.crashRate ?? 0).toFixed(2)}% |\n| 平均启动时间 | ${data.keyMetrics.avgStartupTime?.toFixed(0)}ms |\n| 网络成功率 | ${data.keyMetrics.networkSuccessRate?.toFixed(1)}% |\n| 活跃用户 | ${data.keyMetrics.activeUsers} |\n| 告警数 | ${data.keyMetrics.alertCount} |\n\n${reportContent}`
     }
     messages.value.push({ role: 'user', content: `请对应用【${diagApp.value}】进行一键智能诊断` })
     messages.value.push({ role: 'assistant', content: reportContent })
@@ -277,18 +277,44 @@ function escapeHtml(text) {
     .replace(/'/g, '&#39;')
 }
 
-/** 渲染简单 Markdown */
+/** 渲染 Markdown 表格块（全部行形如 |a|b|，第二行为分隔行则视为表头） */
+function renderTableBlock(block) {
+  const rows = block
+    .trim()
+    .split('\n')
+    .map(r => r.trim())
+    .filter(r => r.startsWith('|') && r.endsWith('|'))
+  if (rows.length < 2) return block
+  const cells = row => row.slice(1, -1).split('|').map(c => c.trim())
+  const isDivider = row => /^\|[\s:|-]+\|$/.test(row)
+  const head = isDivider(rows[1]) ? cells(rows[0]) : null
+  const body = (head ? rows.slice(2) : rows).filter(r => !isDivider(r)).map(cells)
+  const th = head ? '<tr>' + head.map(c => `<th>${c}</th>`).join('') + '</tr>' : ''
+  const tr = body.map(r => '<tr>' + r.map(c => `<td>${c}</td>`).join('') + '</tr>').join('')
+  return `<table class="md-table">${th ? `<thead>${th}</thead>` : ''}<tbody>${tr}</tbody></table>`
+}
+
+/** 渲染简单 Markdown（先转义再渲染，防 XSS；块级语法必须在换行替换前处理） */
 function renderMarkdown(text) {
   if (!text) return ''
   // 必须先转义再渲染 Markdown，否则 v-html 会被注入脚本（XSS）
-  return escapeHtml(text)
+  let html = escapeHtml(text)
     .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
-    .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+    // 表格：连续以 | 开头结尾的行
+    .replace(/(?:^\|.*\|[ \t]*\n?)+/gm, block => renderTableBlock(block))
+    // 标题（# ~ ######）
+    .replace(/^#{1,2}[ \t]+(.+)$/gm, '<div class="md-h2">$1</div>')
+    .replace(/^#{3,6}[ \t]+(.+)$/gm, '<div class="md-h3">$1</div>')
+    // 引用（去掉引用内可能出现的 # 标题标记）、列表、分隔线
+    .replace(/^&gt;[ \t]*$/gm, '')
+    .replace(/^&gt;[ \t]*(?:#{1,6}[ \t]*)?(\S.*)$/gm, '<blockquote class="md-quote">$1</blockquote>')
+    .replace(/^[-*][ \t]+(.+)$/gm, '<li>$1</li>')
+    .replace(/^(?:-{3,}|\*{3,})[ \t]*$/gm, '<hr class="md-hr">')
+    // 行内样式
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>')
-    .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
-    .replace(/^## (.+)$/gm, '<h3 class="md-h3">$1</h3>')
-    .replace(/^> (.+)$/gm, '<blockquote class="md-quote">$1</blockquote>')
+    .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+  // 换行放最后，避免块级语法的行首锚点失效
+  return html.replace(/\n/g, '<br>')
 }
 
 /** Enter 发送（排除中文输入法组合态，避免选词时误发送） */
@@ -530,7 +556,8 @@ onMounted(async () => {
   color: #303133;
   border-top-left-radius: 4px;
 
-  .code-block {
+  /* AI 回复由 v-html 渲染，节点没有 scoped 属性，必须用 :deep() 才能命中样式 */
+  :deep(.code-block) {
     background: #282c34;
     color: #abb2bf;
     padding: 12px;
@@ -540,7 +567,7 @@ onMounted(async () => {
     font-size: 13px;
   }
 
-  .inline-code {
+  :deep(.inline-code) {
     background: #e8e8e8;
     padding: 2px 6px;
     border-radius: 4px;
@@ -548,22 +575,57 @@ onMounted(async () => {
     color: #e74c3c;
   }
 
-  strong {
+  :deep(strong) {
     color: #303133;
   }
 
-  li {
+  :deep(li) {
     list-style-position: inside;
     margin-left: 4px;
   }
 
-  .md-h3 {
+  :deep(.md-h2) {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 14px 0 8px;
+    color: #303133;
+  }
+
+  :deep(.md-h3) {
     font-size: 15px;
+    font-weight: 600;
     margin: 10px 0 6px;
     color: #303133;
   }
 
-  .md-quote {
+  :deep(.md-hr) {
+    border: none;
+    border-top: 1px solid #dcdfe6;
+    margin: 12px 0;
+  }
+
+  :deep(.md-table) {
+    width: auto;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 13px;
+    background: #fff;
+  }
+
+  :deep(.md-table th),
+  :deep(.md-table td) {
+    border: 1px solid #e4e7ed;
+    padding: 6px 10px;
+    text-align: left;
+  }
+
+  :deep(.md-table th) {
+    background: #f0f2f5;
+    font-weight: 600;
+  }
+
+  :deep(.md-quote) {
     padding: 8px 12px;
     margin: 8px 0;
     border-left: 3px solid #409eff;
