@@ -5,12 +5,25 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.5-green)](https://spring.io/projects/spring-boot)
 [![Vue 3](https://img.shields.io/badge/Vue-3.3-blue)](https://vuejs.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)](https://www.mysql.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow)]()
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+
+**在线演示：** http://localhost:3000 —— 运行 `start_all.bat` 一键启动（MySQL / Redis / 后端 / 前端），演示账号 `admin` / `123456789`
+
+## 界面预览
+
+| 性能仪表盘（实时 KPI · 趋势 · 地理分布 · 版本对比 · FPS） | 问题中心（崩溃 / ANR / 性能 / UI 分类追踪） |
+|:---:|:---:|
+| [![性能仪表盘](docs/screenshots/01-dashboard.png)](docs/screenshots/01-dashboard.png) | [![问题中心](docs/screenshots/02-issue.png)](docs/screenshots/02-issue.png) |
+
+**AI 智能诊断**（一键拉取真实性能数据，由 DeepSeek 生成健康评分、指标对标与优化建议）
+
+[![AI 智能诊断](docs/screenshots/03-ai-assistant.png)](docs/screenshots/03-ai-assistant.png)
 
 ---
 
 ## 目录
 
+- [界面预览](#界面预览)
 - [项目简介](#项目简介)
 - [核心功能](#核心功能)
 - [技术栈](#技术栈)
@@ -186,7 +199,9 @@ kaifa/
 ├── reset_pwd.bat                         # 密码重置快捷脚本
 ├── smoke_test.ps1                        # 接口冒烟测试脚本 (PowerShell)
 
+├── docs/screenshots/                     # README 界面预览截图（仪表盘 / 问题中心 / AI 诊断）
 ├── reset_admin_pwd.sql                   # 重置管理员密码 (手动脚本)
+├── LICENSE                               # MIT 开源协议
 └── README.md                             # 本文件
 ```
 
@@ -537,4 +552,4 @@ curl -X POST http://localhost:8080/api/v1/performance/report \
 
 ## License
 
-MIT License © 2026
+本项目基于 [MIT License](LICENSE) 开源，© 2026 yichenzui
