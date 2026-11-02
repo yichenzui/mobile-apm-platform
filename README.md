@@ -7,7 +7,7 @@
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)](https://www.mysql.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-**在线演示：** [http://localhost:3000](http://43.142.66.143)（演示账号 admin / 123456789）
+**在线演示：** [http://43.142.66.143](http://43.142.66.143)（演示账号 admin / 123456789）
 
 ## 界面预览
 
