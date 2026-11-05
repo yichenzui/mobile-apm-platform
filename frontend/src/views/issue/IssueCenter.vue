@@ -445,5 +445,31 @@ onMounted(() => {
     display: flex;
     justify-content: center;
   }
+
+  /* ===== 移动端（手机竖屏） ===== */
+  @media (max-width: 768px) {
+    padding: 12px;
+
+    .card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .header-actions {
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      :deep(.el-select) {
+        width: 100% !important;
+        margin-right: 0 !important;
+      }
+
+      :deep(.el-button) {
+        margin-right: 0 !important;
+      }
+    }
+  }
 }
 </style>

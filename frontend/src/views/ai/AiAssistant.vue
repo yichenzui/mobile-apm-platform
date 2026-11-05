@@ -713,4 +713,48 @@ onMounted(async () => {
     margin-top: 8px;
   }
 }
+
+/* ===== 移动端（手机竖屏） ===== */
+@media (max-width: 768px) {
+  .ai-assistant {
+    height: calc(100vh - 24px);
+    height: calc(100dvh - 24px);
+  }
+
+  .ai-header {
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    gap: 8px;
+
+    .header-left h2 {
+      font-size: 16px;
+    }
+
+    .header-right {
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      :deep(.el-select) {
+        width: 100% !important;
+      }
+    }
+  }
+
+  .chat-container {
+    padding: 12px;
+  }
+
+  .welcome-section {
+    padding: 24px 8px;
+
+    .quick-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .input-area {
+    padding: 12px;
+  }
+}
 </style>

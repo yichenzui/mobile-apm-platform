@@ -341,4 +341,23 @@ const handleLogout = () => {
 .logout-btn {
   width: 100%;
 }
+
+/* ===== 移动端（手机竖屏） ===== */
+@media (max-width: 768px) {
+  .profile-page { padding: 12px; }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    h2 { font-size: 16px; }
+  }
+
+  /* 左右两栏改为上下单栏 */
+  .profile-content {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+}
 </style>

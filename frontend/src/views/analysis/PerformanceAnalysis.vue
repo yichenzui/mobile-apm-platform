@@ -63,7 +63,8 @@
       <el-col
         v-for="kpi in kpiCards"
         :key="kpi.title"
-        :span="6"
+        :xs="12"
+        :sm="6"
       >
         <div :class="['stat-card', `stat-${kpi.color}`]">
           <div class="stat-icon">
@@ -90,7 +91,10 @@
       style="margin-top: 16px"
     >
       <!-- 趋势图 -->
-      <el-col :span="16">
+      <el-col
+        :xs="24"
+        :md="16"
+      >
         <el-card shadow="hover">
           <template #header>
             <span>性能趋势对比</span>
@@ -102,7 +106,10 @@
         </el-card>
       </el-col>
       <!-- 分布排名 -->
-      <el-col :span="8">
+      <el-col
+        :xs="24"
+        :md="8"
+      >
         <el-card shadow="hover">
           <template #header>
             <span>{{ dimensionLabel }}排名</span>
@@ -325,10 +332,12 @@ const loadData = async () => {
       deviceModel: item.deviceModel || item.version || item.networkType || 'N/A',
       version: item.version || 'N/A',
       networkType: item.networkType || 'N/A',
-      healthScore: item.healthScore || Math.max(0, Math.min(100, 100 - (item.crashRate || 0) * 20 - ((item.crashCount || 0) / Math.max(1, item.userCount || item.activeUsers || 1)) * 100))
+      // 健康度取整，避免表格中出现 95.03052391759944 这类长小数
+      healthScore: Math.round(item.healthScore || Math.max(0, Math.min(100, 100 - (item.crashRate || 0) * 20 - ((item.crashCount || 0) / Math.max(1, item.userCount || item.activeUsers || 1)) * 100)))
     }))
 
-    renderRankChart(tableData)
+    // 排名图使用补齐后的数据（原始数据没有 healthScore 字段，会导致柱子全为 0）
+    renderRankChart(detailTableData.value)
 
     // 更新KPI卡片
     if (tableData.length > 0) {
@@ -354,10 +363,12 @@ const renderTrendChart = (data) => {
   if (!trendChartRef.value) return
   if (!trendChart) trendChart = echarts.init(trendChartRef.value)
   const xData = data.map(d => d.time || d.date || '')
+  // 窄屏下把图例固定到顶部、下移绘图区，避免图例与 Y 轴名称重叠
+  const narrow = window.innerWidth <= 768
   const option = {
     tooltip: { trigger: 'axis' },
-    legend: { data: ['崩溃率', '启动时间', '卡顿率'] },
-    grid: { left: 50, right: 50, top: 30, bottom: 30 },
+    legend: { data: ['崩溃率', '启动时间', '卡顿率'], top: narrow ? 0 : undefined },
+    grid: { left: 50, right: 50, top: narrow ? 64 : 30, bottom: 30 },
     xAxis: { type: 'category', data: xData },
     yAxis: [
       { type: 'value', name: '率(%)' },
@@ -381,9 +392,11 @@ const renderRankChart = (data) => {
   const sorted = [...data].sort((a, b) => (b.healthScore || 0) - (a.healthScore || 0)).slice(0, 10)
   const names = sorted.map(d => d.deviceModel || d.version || d.networkType || 'N/A')
   const scores = sorted.map(d => d.healthScore || 0)
+  // 窄屏下压缩左侧类目轴宽度，避免柱状图被挤没
+  const narrow = window.innerWidth <= 768
   const option = {
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    grid: { left: 120, right: 20, top: 10, bottom: 20 },
+    grid: { left: narrow ? 74 : 120, right: narrow ? 34 : 20, top: 10, bottom: 20 },
     xAxis: { type: 'value', max: 100 },
     yAxis: { type: 'category', data: names, inverse: true, axisLabel: { width: 100, overflow: 'truncate' } },
     series: [{
@@ -436,4 +449,35 @@ const exportData = () => {
 .stat-blue .stat-icon { background: #e6f7ff; color: #409eff; }
 .stat-green .stat-icon { background: #f6ffed; color: #67c23a; }
 .stat-purple .stat-icon { background: #f9f0ff; color: #722ed1; }
+
+/* ===== 移动端（手机竖屏） ===== */
+@media (max-width: 768px) {
+  .performance-analysis-page { padding: 12px; }
+
+  /* 标题与筛选控件改为上下两行，避免标题被挤成竖排文字 */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    h2 { font-size: 16px; }
+
+    .header-controls {
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      :deep(.el-select) { width: 100% !important; }
+    }
+  }
+
+  .stat-card {
+    padding: 12px;
+    gap: 10px;
+
+    .stat-icon { width: 36px; height: 36px; }
+    .stat-label { font-size: 12px; }
+    .stat-value { font-size: 18px; }
+  }
+}
 </style>

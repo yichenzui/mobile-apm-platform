@@ -42,7 +42,10 @@
 
     <!-- 版本健康度雷达图 + 核心对比 -->
     <el-row :gutter="16">
-      <el-col :span="12">
+      <el-col
+        :xs="24"
+        :md="12"
+      >
         <el-card shadow="hover">
           <template #header>
             <span>版本健康度雷达图</span>
@@ -53,7 +56,10 @@
           />
         </el-card>
       </el-col>
-      <el-col :span="12">
+      <el-col
+        :xs="24"
+        :md="12"
+      >
         <el-card shadow="hover">
           <template #header>
             <span>关键指标对比</span>
@@ -74,7 +80,8 @@
       <el-col
         v-for="ver in versionKpis"
         :key="ver.version"
-        :span="8"
+        :xs="24"
+        :sm="8"
       >
         <el-card
           shadow="hover"
@@ -419,6 +426,27 @@ const getQualityLabel = (row) => {
       .danger { color: #f56c6c; }
       .warning { color: #e6a23c; }
       .success { color: #67c23a; }
+    }
+  }
+}
+
+/* ===== 移动端（手机竖屏） ===== */
+@media (max-width: 768px) {
+  .version-analysis-page { padding: 12px; }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    h2 { font-size: 16px; }
+
+    .header-controls {
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      :deep(.el-select) { width: 100% !important; }
     }
   }
 }

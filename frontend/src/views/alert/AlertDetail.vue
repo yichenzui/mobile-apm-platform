@@ -17,7 +17,7 @@
         class="card-content"
       >
         <el-descriptions
-          :column="2"
+          :column="isMobile ? 1 : 2"
           border
         >
           <el-descriptions-item label="告警ID">
@@ -80,6 +80,10 @@ import { ElMessage } from 'element-plus'
 import { getAlertDetail } from '@/api/alert'
 import dayjs from 'dayjs'
 import { getSeverityType, getSeverityText } from '@/utils/severity'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+// 窄屏下描述列表改为单列，避免内容被挤压换行
+const isMobile = useIsMobile()
 
 const route = useRoute()
 const router = useRouter()

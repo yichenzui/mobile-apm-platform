@@ -3,7 +3,10 @@
     <!-- 顶部工具栏 -->
     <div class="dashboard-toolbar">
       <el-row :gutter="20">
-        <el-col :span="8">
+        <el-col
+          :xs="24"
+          :sm="8"
+        >
           <el-select
             v-model="selectedApp"
             placeholder="选择应用"
@@ -17,7 +20,10 @@
             />
           </el-select>
         </el-col>
-        <el-col :span="10">
+        <el-col
+          :xs="24"
+          :sm="10"
+        >
           <el-radio-group
             v-model="timeRange"
             @change="handleTimeRangeChange"
@@ -47,7 +53,8 @@
           />
         </el-col>
         <el-col
-          :span="6"
+          :xs="24"
+          :sm="6"
           class="text-right user-col"
         >
           <el-button
@@ -212,7 +219,10 @@
     <div class="charts-container">
       <el-row :gutter="20">
         <!-- 时间趋势图 -->
-        <el-col :span="16">
+        <el-col
+          :xs="24"
+          :md="16"
+        >
           <el-card>
             <template #header>
               <div class="card-header">
@@ -242,7 +252,10 @@
         </el-col>
 
         <!-- 地理分布图 -->
-        <el-col :span="8">
+        <el-col
+          :xs="24"
+          :md="8"
+        >
           <el-card>
             <template #header>
               <div class="card-header">
@@ -262,7 +275,10 @@
         style="margin-top: 20px"
       >
         <!-- 版本对比图 -->
-        <el-col :span="12">
+        <el-col
+          :xs="24"
+          :md="12"
+        >
           <el-card>
             <template #header>
               <div class="card-header">
@@ -292,7 +308,10 @@
         </el-col>
 
         <!-- FPS分布图 -->
-        <el-col :span="12">
+        <el-col
+          :xs="24"
+          :md="12"
+        >
           <el-card>
             <template #header>
               <div class="card-header">
@@ -309,7 +328,10 @@
     <div class="data-table-container">
       <el-row :gutter="20">
         <!-- 最新告警 -->
-        <el-col :span="12">
+        <el-col
+          :xs="24"
+          :md="12"
+        >
           <el-card>
             <template #header>
               <div class="card-header">
@@ -331,7 +353,10 @@
         </el-col>
 
         <!-- 最新问题 -->
-        <el-col :span="12">
+        <el-col
+          :xs="24"
+          :md="12"
+        >
           <el-card>
             <template #header>
               <div class="card-header">
@@ -809,6 +834,91 @@ watch(timeRange, () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+
+  /* ===== 移动端（手机竖屏） ===== */
+  @media (max-width: 768px) {
+    padding: 12px;
+
+    .dashboard-toolbar {
+      margin-bottom: 12px;
+
+      :deep(.el-select) {
+        width: 100%;
+      }
+
+      :deep(.el-radio-group) {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      :deep(.el-date-editor) {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-top: 8px;
+      }
+
+      .user-col {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .user-dropdown {
+          margin-left: auto;
+        }
+      }
+    }
+
+    /* 快捷入口：一行 4 个图标，避免溢出 */
+    .quick-nav-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .quick-nav-card {
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 4px;
+      text-align: center;
+
+      .nav-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+      }
+
+      .nav-label {
+        font-size: 12px;
+      }
+    }
+
+    /* KPI 卡片两列，卡片高度自适应 */
+    .kpi-cards-container {
+      margin-bottom: 12px;
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+    }
+
+    :deep(.kpi-card) {
+      height: auto;
+    }
+
+    .charts-container,
+    .data-table-container {
+      margin-bottom: 12px;
+    }
+
+    /* 卡片标题与其右侧操作按钮在窄屏换行 */
+    .card-header {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
   }
 }
 </style>

@@ -1,0 +1,72 @@
+/**
+ * 移动端适配基础样式
+ * 说明：Element Plus 的栅格（el-col）在窄屏下不会自动换行，
+ * 因此各页面模板中使用 :xs / :sm / :md 响应式列宽，这里只补充
+ * 全局性的控件与容器行为，避免每个页面重复编写同样的规则。
+ */
+
+/* 断点约定：xs(<768) 手机 | sm(>=768) 平板 | md(>=992) 桌面 */
+@media (max-width: 768px) {
+  html,
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* 卡片内边距收紧，给内容留出宽度 */
+  .el-card__body {
+    padding: 12px;
+  }
+
+  .el-card__header {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  /* 表单控件铺满，避免固定宽度溢出 */
+  .el-date-editor.el-input,
+  .el-date-editor--daterange,
+  .el-date-editor--datetimerange {
+    width: 100% !important;
+  }
+
+  .el-select {
+    max-width: 100%;
+  }
+
+  /* 表格：字号与单元格内边距收紧，宽表由 el-table 自身横向滚动 */
+  .el-table {
+    font-size: 12px;
+  }
+
+  .el-table .cell {
+    padding: 0 6px;
+    word-break: break-word;
+  }
+
+  /* 分页居中并可换行 */
+  .el-pagination {
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  /* 弹窗类组件不超出视口 */
+  .el-message-box {
+    width: 90vw !important;
+  }
+
+  .el-dialog {
+    width: 92vw !important;
+  }
+
+  /* 页面标题、卡片标题不折行（避免窄宽度下逐字换行） */
+  h2,
+  h3 {
+    white-space: nowrap;
+  }
+
+  /* 栅格行在换行后补充垂直间距 */
+  .el-row {
+    row-gap: 12px;
+  }
+}

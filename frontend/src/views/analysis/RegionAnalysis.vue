@@ -42,7 +42,10 @@
 
     <el-row :gutter="16">
       <!-- 中国地图 -->
-      <el-col :span="16">
+      <el-col
+        :xs="24"
+        :md="16"
+      >
         <el-card shadow="hover">
           <template #header>
             <span>中国用户分布热力图</span>
@@ -54,13 +57,17 @@
           </template>
           <div
             ref="mapChartRef"
+            class="chart-box map-box"
             style="height: 520px"
           />
         </el-card>
       </el-col>
 
       <!-- 省份排行 -->
-      <el-col :span="8">
+      <el-col
+        :xs="24"
+        :md="8"
+      >
         <el-card
           shadow="hover"
           style="margin-bottom: 16px;"
@@ -325,9 +332,11 @@ const renderProvinceChart = (data) => {
   if (!provinceChartRef.value) return
   if (!provinceChart) provinceChart = echarts.init(provinceChartRef.value)
   const sorted = [...data].sort((a, b) => (b.userCount || 0) - (a.userCount || 0)).slice(0, 10)
+  // 窄屏下压缩左侧类目轴宽度
+  const narrow = window.innerWidth <= 768
   provinceChart.setOption({
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    grid: { left: 90, right: 40, top: 10, bottom: 20 },
+    grid: { left: narrow ? 66 : 90, right: narrow ? 44 : 40, top: 10, bottom: 20 },
     xAxis: { type: 'value' },
     yAxis: { type: 'category', data: sorted.map(d => d.province).reverse(), axisLabel: { fontSize: 11 } },
     series: [{
@@ -350,12 +359,37 @@ const renderProvinceChart = (data) => {
 .crash-rank-list {
   .crash-rank-item {
     display: flex; align-items: center; gap: 8px; padding: 6px 0;
-    .rank-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #fff; background: #909399; }
+    .rank-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #fff; background: #909399; flex-shrink: 0; }
     .rank-1 { background: #f56c6c; }
     .rank-2 { background: #e6a23c; }
     .rank-3 { background: #409eff; }
-    .rank-name { width: 50px; font-size: 13px; }
+    /* 省份名不允许逐字换行（窄屏下曾出现"广/东"竖排） */
+    .rank-name { flex: 1; min-width: 48px; font-size: 13px; white-space: nowrap; }
     .rank-value { min-width: 50px; font-size: 13px; color: #f56c6c; font-weight: 600; text-align: right; }
   }
+}
+
+/* ===== 移动端（手机竖屏） ===== */
+@media (max-width: 768px) {
+  .region-analysis-page { padding: 12px; }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    h2 { font-size: 16px; }
+
+    .header-controls {
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      :deep(.el-select) { width: 100% !important; }
+    }
+  }
+
+  /* 地图在窄屏下降低高度，避免占据整屏 */
+  .map-box { height: 360px !important; }
 }
 </style>

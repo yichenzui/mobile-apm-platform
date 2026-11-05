@@ -643,6 +643,34 @@ const scrollLog = () => {
 }
 .config-card, .events-card { height: fit-content; }
 
+/* ===== 移动端（手机竖屏） ===== */
+@media (max-width: 768px) {
+  .simulator-page { padding: 12px; }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+
+    h2 { font-size: 16px; }
+  }
+
+  /* 侧栏 + 内容双栏改为单栏 */
+  .simulator-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-item {
+    padding: 12px;
+
+    .event-icon { width: 38px; height: 38px; }
+  }
+}
+
 .event-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

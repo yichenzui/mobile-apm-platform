@@ -165,7 +165,8 @@ const handleRegister = () => {
 }
 
 .register-card {
-  width: 500px;
+  width: 100%;
+  max-width: 500px;
 }
 
 .card-header {
@@ -190,5 +191,20 @@ const handleRegister = () => {
 .login-link a {
   color: #409EFF;
   text-decoration: none;
+}
+
+/* ===== 移动端（手机竖屏） ===== */
+@media (max-width: 768px) {
+  .register-container {
+    align-items: flex-start;
+    height: auto;
+    min-height: 100vh;
+    padding: 32px 16px 24px;
+    box-sizing: border-box;
+  }
+
+  .card-header h2 {
+    font-size: 18px;
+  }
 }
 </style>
