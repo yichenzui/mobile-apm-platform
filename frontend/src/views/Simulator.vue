@@ -290,39 +290,44 @@
 
         <div class="batch-section">
           <div class="batch-controls">
-            <span>批量模拟：</span>
-            <el-input-number
-              v-model="batchCount"
-              :min="1"
-              :max="50"
-              size="small"
-            />
-            <span>条随机事件，间隔</span>
-            <el-input-number
-              v-model="batchInterval"
-              :min="100"
-              :max="5000"
-              :step="100"
-              size="small"
-            />
-            <span>ms</span>
-            <el-button
-              type="primary"
-              :icon="VideoPlay"
-              :loading="batchRunning"
-              size="small"
-              @click="startBatch"
-            >
-              {{ batchRunning ? '运行中...' : '批量执行' }}
-            </el-button>
-            <el-button
-              v-if="batchRunning"
-              type="danger"
-              size="small"
-              @click="stopBatch"
-            >
-              停止
-            </el-button>
+            <span class="batch-label">批量模拟</span>
+            <div class="batch-row">
+              <el-input-number
+                v-model="batchCount"
+                :min="1"
+                :max="50"
+                size="small"
+              />
+              <span>条随机事件</span>
+            </div>
+            <div class="batch-row">
+              <span>间隔</span>
+              <el-input-number
+                v-model="batchInterval"
+                :min="100"
+                :max="5000"
+                :step="100"
+                size="small"
+              />
+              <span>ms</span>
+              <el-button
+                type="primary"
+                :icon="VideoPlay"
+                :loading="batchRunning"
+                size="small"
+                @click="startBatch"
+              >
+                {{ batchRunning ? '运行中...' : '批量执行' }}
+              </el-button>
+              <el-button
+                v-if="batchRunning"
+                type="danger"
+                size="small"
+                @click="stopBatch"
+              >
+                停止
+              </el-button>
+            </div>
           </div>
         </div>
       </el-card>
@@ -643,34 +648,6 @@ const scrollLog = () => {
 }
 .config-card, .events-card { height: fit-content; }
 
-/* ===== 移动端（手机竖屏） ===== */
-@media (max-width: 768px) {
-  .simulator-page { padding: 12px; }
-
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-
-    h2 { font-size: 16px; }
-  }
-
-  /* 侧栏 + 内容双栏改为单栏 */
-  .simulator-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .event-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .event-item {
-    padding: 12px;
-
-    .event-icon { width: 38px; height: 38px; }
-  }
-}
-
 .event-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -700,8 +677,12 @@ const scrollLog = () => {
 
 .batch-section {
   .batch-controls {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap;
     font-size: 13px; color: #606266;
+
+    .batch-label { font-weight: 500; }
+
+    .batch-row { display: flex; align-items: center; gap: 8px; }
   }
 }
 
@@ -720,6 +701,84 @@ const scrollLog = () => {
       .log-msg { color: #606266; }
     }
     .log-error .log-msg { color: #f56c6c; }
+  }
+}
+
+/* ===== 移动端（手机竖屏） ===== */
+@media (max-width: 768px) {
+  .simulator-page { padding: 12px; }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+
+    h2 { font-size: 16px; }
+    .subtitle { font-size: 12px; }
+  }
+
+  /* 左侧配置栏 + 右侧事件区：双栏改单栏 */
+  .simulator-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* 事件卡片：两列挤成竖排文字，改为单列整行 */
+  .event-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .event-item {
+    padding: 12px;
+
+    .event-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+    }
+
+    .event-info {
+      min-width: 0;
+
+      strong { font-size: 14px; }
+      .event-desc { font-size: 12px; line-height: 1.5; }
+    }
+  }
+
+  /* 批量模拟控件：标签与操作分行，避免元素被随机折行 */
+  .batch-section .batch-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    .batch-label { font-weight: 600; }
+
+    .batch-row {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    :deep(.el-select) { width: 100% !important; }
+  }
+
+  .log-card {
+    .log-header {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .log-list {
+      max-height: 300px;
+
+      .log-item {
+        align-items: flex-start;
+        gap: 8px;
+
+        .log-time { min-width: 62px; font-size: 12px; }
+        .log-msg { font-size: 12px; word-break: break-all; }
+      }
+    }
   }
 }
 </style>
