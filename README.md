@@ -7,7 +7,7 @@
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)](https://www.mysql.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-**在线演示：** [http://43.142.66.143](http://43.142.66.143)（演示账号 admin / 123456789）
+**在线演示：** [http://43.142.66.143](http://43.142.66.143) （演示账号 `admin` / `123456789`，普通用户 `demo` / `123456`）
 
 ## 界面预览
 
@@ -60,6 +60,7 @@
 | **用户系统** | JWT 认证、注册/登录/刷新令牌、角色权限（ADMIN / USER） |
 | **定时数据聚合** | 上报时增量聚合 + 每小时增量 / 每日全量定时重算，汇总结果直接驱动告警检测 |
 | **自动演示数据** | 后端启动时自动生成最近 7 天演示数据与演示告警规则，无需手动维护 |
+| **移动端适配** | 仪表盘 / 分析 / 告警 / 问题等页面支持手机浏览器：栅格自动堆叠、KPI 两列、图表全宽、表格可横向滚动 |
 
 ---
 
@@ -140,6 +141,7 @@ kaifa/
 │   │   │   ├── AlertRuleConfig           # 告警规则预配置
 │   │   │   ├── NotificationConfig        # 通知渠道配置
 │   │   │   ├── DemoDataInitializer       # ★ 启动时自动生成最近7天演示数据
+│   │   │   ├── DemoUserInitializer       # ★ 启动时创建演示普通用户 demo/123456
 │   │   │   ├── RedisHealthCheck          # Redis 健康检查
 │   │   │   └── FilterConfig              # 禁用 JWT 过滤器的全局重复注册
 │   │   ├── controller/                   # 控制器层 (详见下方 API 列表)
@@ -178,6 +180,8 @@ kaifa/
 │   │   ├── router/index.js               # 路由配置 (含登录守卫与角色控制)
 │   │   ├── stores/dashboard.js           # Pinia 状态管理
 │   │   ├── composables/useWebSocket.js   # WebSocket STOMP 实时推送
+│   │   ├── composables/useIsMobile.js    # 响应式判断窄屏（详情页描述列表切单列）
+│   │   ├── styles/responsive.css         # 移动端适配基础样式（<768px 断点）
 │   │   ├── components/FloatBall.vue      # 悬浮球组件
 │   │   ├── __tests__/dashboard.test.js   # Vitest 单元测试 (store 逻辑)
 │   │   └── views/
@@ -293,7 +297,11 @@ npm run dev
 | 角色 | 用户名 | 密码 |
 |------|--------|------|
 | 管理员 | `admin` | `123456789` |
+| 普通用户（演示） | `demo` | `123456` |
 | 普通用户 | 自行注册 | 密码 6-20 位 |
+
+> 登录页提供 **「管理员演示账号」「普通用户演示账号」** 两个按钮，点击后自动填入账号密码并登录。
+> 账号 `demo` 由后端 `DemoUserInitializer` 在启动时自动创建（已存在则不覆盖）。
 
 > `AdminPasswordInitializer` 只在**首次启动（admin 账户不存在）**时用默认密码 `123456789` 创建管理员，
 > **后续启动不会覆盖已有密码**，你自己改过的密码不会被重置。
